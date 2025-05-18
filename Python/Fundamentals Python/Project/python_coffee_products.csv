@@ -1,0 +1,99 @@
+id,item,type,price
+1,Cheeseburger,food,7.99
+2,Margherita Pizza,food,8.99
+3,Grilled Chicken Sandwich,food,6.49
+4,Caesar Salad,food,5.99
+5,French Fries,food,1.49
+6,Spaghetti Bolognese,food,9.49
+7,Tacos,food,6.99
+8,Steak,food,14.99
+9,Fried Rice,food,7.49
+10,Sushi,food,12.99
+11,Hot Dog,food,4.49
+12,Falafel Wrap,food,5.99
+13,Shawarma,food,6.49
+14,Pasta Alfredo,food,9.99
+15,Kebab Plate,food,11.49
+16,Veggie Burger,food,6.99
+17,Chicken Nuggets,food,4.99
+18,Quesadilla,food,6.79
+19,Burrito,food,7.49
+20,Club Sandwich,food,6.29
+21,Beef Shawarma,food,7.89
+22,Stuffed Peppers,food,8.29
+23,Onion Rings,food,3.99
+24,Grilled Cheese,food,4.49
+25,Meatballs,food,5.99
+26,Lamb Chops,food,13.99
+27,Chicken Wings,food,6.49
+28,Corn Dog,food,3.89
+29,Veggie Wrap,food,5.49
+30,Ramen Bowl,food,9.59
+31,Fish & Chips,food,10.99
+32,Beef Tacos,food,6.79
+33,Lasagna,food,10.49
+34,Coca-Cola,drink,1.99
+35,Pepsi,drink,1.99
+36,Orange Juice,drink,2.49
+37,Lemonade,drink,2.29
+38,Iced Tea,drink,2.49
+39,Coffee,drink,2.99
+40,Cappuccino,drink,3.49
+41,Latte,drink,3.79
+42,Milkshake,drink,4.29
+43,Water Bottle,drink,1.49
+44,Green Tea,drink,2.79
+45,Herbal Tea,drink,2.89
+46,Smoothie,drink,4.99
+47,Iced Coffee,drink,3.29
+48,Hot Chocolate,drink,2.99
+49,Espresso,drink,2.49
+50,Sparkling Water,drink,1.79
+51,Energy Drink,drink,2.99
+52,Root Beer,drink,1.99
+53,Ginger Ale,drink,2.09
+54,Coconut Water,drink,2.59
+55,Tomato Juice,drink,2.19
+56,Apple Juice,drink,2.39
+57,Strawberry Smoothie,drink,4.49
+58,Mango Lassi,drink,3.59
+59,Milk,drink,1.99
+60,Protein Shake,drink,5.29
+61,Buttermilk,drink,2.09
+62,Matcha Latte,drink,3.99
+63,Soy Milk,drink,2.19
+64,Banana Smoothie,drink,4.39
+65,Avocado Juice,drink,4.79
+66,Chocolate Cake,dessert,4.99
+67,Ice Cream,dessert,3.99
+68,Apple Pie,dessert,4.49
+69,Brownie,dessert,3.49
+70,Cheesecake,dessert,4.79
+71,Donut,dessert,1.99
+72,Pudding,dessert,2.99
+73,Cupcake,dessert,2.49
+74,Macaron,dessert,2.99
+75,Fruit Salad,dessert,3.59
+76,Mousse,dessert,4.29
+77,Tiramisu,dessert,5.49
+78,Baklava,dessert,4.99
+79,Waffle,dessert,3.99
+80,Crepe,dessert,3.79
+81,Gelato,dessert,3.69
+82,Rice Pudding,dessert,2.89
+83,Peach Cobbler,dessert,4.39
+84,Churros,dessert,3.59
+85,Lava Cake,dessert,5.29
+86,Eclair,dessert,2.79
+87,Fudge,dessert,3.09
+88,Cannoli,dessert,3.99
+89,Pavlova,dessert,4.59
+90,Chocolate Chip Cookie,dessert,1.89
+91,Red Velvet Cake,dessert,5.19
+92,Carrot Cake,dessert,4.69
+93,Oreo Cheesecake,dessert,5.49
+94,Banana Split,dessert,4.99
+95,Tart,dessert,3.79
+96,Nougat,dessert,3.39
+97,Muffin,dessert,2.29
+98,Trifle,dessert,3.69
