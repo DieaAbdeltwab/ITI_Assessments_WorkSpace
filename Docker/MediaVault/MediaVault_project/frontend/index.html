@@ -7,7 +7,76 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { padding-top: 70px; }
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .page-number {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .anime-card {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        .anime-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .anime-info {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .anime-poster {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+        .anime-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .anime-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .rating {
+            margin-bottom: 10px;
+        }
+        .rating .fa-star {
+            color: #ffc107;
+        }
+        .anime-meta {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        .meta-item {
+            margin-bottom: 5px;
+        }
+        .meta-item i {
+            width: 20px;
+            text-align: center;
+            margin-right: 5px;
+        }
+        .anime-actions {
+            margin-top: auto;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
@@ -53,88 +122,18 @@
 
         <!-- Media Grid -->
         <div class="row" id="mediaGrid">
-            {% for media in media_list %}
-            <div class="col-md-4 col-lg-3 mb-4">
-                <div class="anime-card animate__animated animate__fadeIn">
-                    <div class="anime-info">
-                        <img src="{{ url_for('static', filename='images/' + media['image']) }}" 
-                             alt="{{ media['title'] }}" 
-                             class="anime-poster">
-                        <div class="anime-content">
-                            <h3 class="anime-title">{{ media['title'] }}</h3>
-                            <div class="rating">
-                                <i class="fas fa-star"></i>
-                                <span>{{ media['rating'] }}</span>
-                            </div>
-                            <div class="anime-meta">
-                                <div class="meta-item">
-                                    <i class="fas fa-tags"></i>
-                                    {{ media['genre'] }}
-                                </div>
-                                {% if media_type == 'best_series' %}
-                                <div class="meta-item">
-                                    <i class="fas fa-film"></i>
-                                    {{ media['episodes'] }} eps
-                                </div>
-                                <div class="meta-item">
-                                    <i class="fas fa-star"></i>
-                                    {{ media['rating'] }}
-                                </div>
-                                <div class="meta-item">
-                                    <i class="fas fa-calendar"></i>
-                                    {{ media['release_year'] }}
-                                </div>
-                                <div class="meta-description">
-                                    {{ media['description'] }}
-                                </div>
-                                {% elif media_type == 'anime' %}
-                                <div class="meta-item">
-                                    <i class="fas fa-film"></i>
-                                    {{ media['episodes'] }} eps
-                                </div>
-                                {% else %}
-                                <div class="meta-item">
-                                    <i class="fas fa-clock"></i>
-                                    {{ media['runtime'] }} min
-                                </div>
-                                {% endif %}
-                                <div class="meta-item">
-                                    <i class="fas fa-calendar"></i>
-                                    {{ media['release_year'] }}
-                                </div>
-                            </div>
-                            <div class="anime-actions">
-                                <button class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-play"></i> Watch Now
-                                </button>
-                                <button class="btn btn-outline-success btn-sm">
-                                    <i class="fas fa-plus"></i> Add to List
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Media items will be loaded here dynamically -->
+            <div class="col-12 text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
-            {% endfor %}
         </div>
-
+        
+        <!-- Pagination -->
         <div class="pagination justify-content-center">
             <div class="pagination" id="paginationContainer">
-                {% if prev_page %}
-                    <a href="#" 
-                       class="btn btn-outline-primary pagination-link" 
-                       data-page="{{ prev_page }}">Previous</a>
-                {% endif %}
-                
-                <span class="page-number text-primary">
-                    Page <span id="currentPage">{{ current_page }}</span> of <span id="totalPages">{{ total_pages }}</span>
-                </span>
-                
-                {% if next_page %}
-                    <a href="#" 
-                       class="btn btn-outline-primary pagination-link" 
-                       data-page="{{ next_page }}">Next</a>
-                {% endif %}
+                <!-- Pagination will be loaded here dynamically -->
             </div>
         </div>
     </div>
@@ -145,22 +144,28 @@
             const paginationContainer = document.getElementById('paginationContainer');
             if (!paginationContainer) return;
             
+            // Extract pagination data
+            const currentPage = data.current_page || 1;
+            const totalPages = data.total_pages || 1;
+            const prevPage = data.prev_page;
+            const nextPage = data.next_page;
+            
             // Update current page and total pages
             const currentPageEl = document.getElementById('currentPage');
             const totalPagesEl = document.getElementById('totalPages');
             
-            if (currentPageEl) currentPageEl.textContent = data.current_page || 1;
-            if (totalPagesEl) totalPagesEl.textContent = data.total_pages || 1;
+            if (currentPageEl) currentPageEl.textContent = currentPage;
+            if (totalPagesEl) totalPagesEl.textContent = totalPages;
             
             // Update pagination buttons
             let paginationHTML = '';
             
             // Previous button
-            if (data.has_prev) {
+            if (prevPage) {
                 paginationHTML += `
                     <a href="#" 
                        class="btn btn-outline-primary pagination-link" 
-                       data-page="${data.prev_page}">Previous</a>`;
+                       data-page="${prevPage}">Previous</a>`;
             } else {
                 paginationHTML += `
                     <button class="btn btn-outline-secondary" disabled>Previous</button>`;
@@ -169,15 +174,15 @@
             // Page info
             paginationHTML += `
                 <span class="page-number text-primary">
-                    Page <span id="currentPage">${data.current_page || 1}</span> of <span id="totalPages">${data.total_pages || 1}</span>
+                    Page <span id="currentPage">${currentPage}</span> of <span id="totalPages">${totalPages}</span>
                 </span>`;
             
             // Next button
-            if (data.has_next) {
+            if (nextPage) {
                 paginationHTML += `
                     <a href="#" 
                        class="btn btn-outline-primary pagination-link" 
-                       data-page="${data.next_page}">Next</a>`;
+                       data-page="${nextPage}">Next</a>`;
             } else {
                 paginationHTML += `
                     <button class="btn btn-outline-secondary" disabled>Next</button>`;
@@ -316,14 +321,21 @@
                 mediaGrid.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
             }
             
-            // Build the filter URL
-            const filterUrl = `/filter?${params.toString()}`;
+            // Build the filter URL - Use the backend service name in the Docker network
+            const filterUrl = `/api/media?${params.toString()}`;
             
-            // Fetch filtered data
-            fetch(filterUrl)
+            // Fetch filtered data with CORS headers
+            fetch(filterUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                mode: 'cors'
+            })
                 .then(response => {
+                    console.log('API Response:', response);
                     if (!response.ok) {
-                        throw new Error('Network response was not ok');
+                        throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
                     }
                     return response.json();
                 })
@@ -362,7 +374,7 @@
                             card.innerHTML = `
                                 <div class="anime-card animate__animated animate__fadeIn">
                                     <div class="anime-info">
-                                        <img src="/static/images/${media.image}" 
+                                        <img src="images/${media.image}" 
                                              alt="${media.title}" 
                                              class="anime-poster"
                                              onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNlZWVlZWUiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+'"

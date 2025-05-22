@@ -18,11 +18,23 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Create necessary directories
+RUN mkdir -p /app/frontend
+
+# Set working directory to backend
+WORKDIR /app/backend
+
+# Copy backend requirements first for better caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend code
 COPY . .
+
+# The frontend files will be mounted via docker-compose volume
 
 # Expose the port the app runs on
 EXPOSE 5000
 
 # Command to run the application
-CMD ["python", "backend/app.py"]
+CMD ["python", "app.py"]

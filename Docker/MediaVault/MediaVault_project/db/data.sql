@@ -1,13 +1,51 @@
+-- Create database and user
+CREATE DATABASE IF NOT EXISTS anime_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Grant privileges to the user
+GRANT ALL PRIVILEGES ON anime_db.* TO 'user'@'%' IDENTIFIED BY 'password';
+FLUSH PRIVILEGES;
+
+-- Use the database
+USE anime_db;
+
 -- Create anime table
 CREATE TABLE IF NOT EXISTS anime (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    genre TEXT NOT NULL,
-    episodes INTEGER,
-    rating REAL,
-    release_year INTEGER,
-    image TEXT
-);
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    genre VARCHAR(255) NOT NULL,
+    episodes INT,
+    rating FLOAT,
+    release_year INT,
+    image VARCHAR(255)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Create best_series table
+CREATE TABLE IF NOT EXISTS best_series (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL UNIQUE,
+    type VARCHAR(50) NOT NULL,  -- anime or series
+    genre VARCHAR(255) NOT NULL,
+    episodes INT,
+    rating FLOAT,
+    release_year INT,
+    image VARCHAR(255),
+    description TEXT,
+    runtime INT,  -- Added runtime column
+    FULLTEXT (title, genre, description)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Create movies table
+CREATE TABLE IF NOT EXISTS movies (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    genre VARCHAR(255) NOT NULL,
+    runtime INT,
+    rating FLOAT,
+    release_year INT,
+    image VARCHAR(255)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tables will be empty initially, no need to truncate
 
 -- Insert sample anime data
 INSERT INTO anime (title, genre, episodes, rating, release_year, image) VALUES
@@ -34,19 +72,6 @@ INSERT INTO anime (title, genre, episodes, rating, release_year, image) VALUES
 ('Noragami', 'Action', 12, 8.7, 2014, 'noragami.jpg'),
 ('Demon Slayer: Swordsmith Village Arc', 'Action', 1, 9.2, 2023, 'demon_slayer_swordsmith.jpg');
 
--- Create best series table
-CREATE TABLE IF NOT EXISTS best_series (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL UNIQUE,
-    type TEXT NOT NULL,  -- anime or series
-    genre TEXT NOT NULL,
-    episodes INTEGER,
-    rating REAL,
-    release_year INTEGER,
-    image TEXT,
-    description TEXT
-);
-
 -- Insert best series data
 INSERT INTO best_series (title, type, genre, episodes, rating, release_year, image, description) VALUES
 ('Breaking Bad', 'series', 'Crime', 62, 9.5, 2008, 'breaking_bad.jpg', 'A high school chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine to secure his family''s future.'),
@@ -62,14 +87,14 @@ INSERT INTO best_series (title, type, genre, episodes, rating, release_year, ima
 
 -- Create movies table
 CREATE TABLE IF NOT EXISTS movies (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL UNIQUE,
-    genre TEXT NOT NULL,
-    rating REAL,
-    release_year INTEGER,
-    image TEXT,
-    runtime INTEGER
-);
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL UNIQUE,
+    genre VARCHAR(255) NOT NULL,
+    rating FLOAT,
+    release_year INT,
+    image VARCHAR(255),
+    runtime INT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Insert sample movies data
 INSERT INTO movies (title, genre, rating, release_year, image, runtime) VALUES

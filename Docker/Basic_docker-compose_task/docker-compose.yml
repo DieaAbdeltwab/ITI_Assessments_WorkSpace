@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: httpd
+    container_name: frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/local/apache2/htdocs/
+    networks:
+      - frontend
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "5000:5000"
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - db
+
+  db:
+    image: mariadb
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecretpassword
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpass
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - backend
+
+networks:
+  frontend:
+  backend:
