@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- Root element -->
+  <xs:element name="students">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="student" maxOccurs="unbounded" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="firstName" type="xs:string"/>
+              <xs:element name="lastName" type="xs:string"/>
+              <xs:element name="date" type="xs:date"/>
+            </xs:sequence>
+            <xs:attribute name="ID" type="xs:integer" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>
