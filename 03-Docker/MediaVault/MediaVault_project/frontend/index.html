@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Vault</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { padding-top: 70px; }
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .page-number {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .anime-card {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        .anime-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .anime-info {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .anime-poster {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+        .anime-content {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .anime-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .rating {
+            margin-bottom: 10px;
+        }
+        .rating .fa-star {
+            color: #ffc107;
+        }
+        .anime-meta {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+        .meta-item {
+            margin-bottom: 5px;
+        }
+        .meta-item i {
+            width: 20px;
+            text-align: center;
+            margin-right: 5px;
+        }
+        .anime-actions {
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="fas fa-film me-2"></i>MediaVault
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="btn-group mb-3" role="group" aria-label="Media type filter">
+                    <button type="button" class="btn btn-outline-primary genre-btn" data-type="all">All</button>
+                    <button type="button" class="btn btn-outline-primary genre-btn" data-type="anime">Anime</button>
+                    <button type="button" class="btn btn-outline-primary genre-btn" data-type="movies">Movies</button>
+                    <button type="button" class="btn btn-outline-primary genre-btn" data-type="best_series">Best Series</button>
+                </div>
+                
+                <div class="btn-group mb-3 ms-2" role="group" aria-label="Genre filter">
+                    <button type="button" class="btn btn-outline-secondary genre-btn" data-genre="all">All Genres</button>
+                    <button type="button" class="btn btn-outline-secondary genre-btn" data-genre="Action">Action</button>
+                    <button type="button" class="btn btn-outline-secondary genre-btn" data-genre="Adventure">Adventure</button>
+                    <button type="button" class="btn btn-outline-secondary genre-btn" data-genre="Comedy">Comedy</button>
+                    <button type="button" class="btn btn-outline-secondary genre-btn" data-genre="Drama">Drama</button>
+                    <button type="button" class="btn btn-outline-secondary genre-btn" data-genre="Horror">Horror</button>
+                    <button type="button" class="btn btn-outline-secondary genre-btn" data-genre="Mystery">Mystery</button>
+                    <button type="button" class="btn btn-outline-secondary genre-btn" data-genre="Romance">Romance</button>
+                    <button type="button" class="btn btn-outline-secondary genre-btn" data-genre="Sci-Fi">Sci-Fi</button>
+                    <button type="button" class="btn btn-outline-secondary genre-btn" data-genre="Western">Western</button>
+                </div>
+                
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search..." value="{{ search_query }}">
+                    <button class="btn btn-outline-secondary" type="button" id="searchButton">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-5 pt-5">
+
+        <!-- Media Grid -->
+        <div class="row" id="mediaGrid">
+            <!-- Media items will be loaded here dynamically -->
+            <div class="col-12 text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination justify-content-center">
+            <div class="pagination" id="paginationContainer">
+                <!-- Pagination will be loaded here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to update pagination UI
+        function updatePaginationUI(data) {
+            const paginationContainer = document.getElementById('paginationContainer');
+            if (!paginationContainer) return;
+            
+            // Extract pagination data
+            const currentPage = data.current_page || 1;
+            const totalPages = data.total_pages || 1;
+            const prevPage = data.prev_page;
+            const nextPage = data.next_page;
+            
+            // Update current page and total pages
+            const currentPageEl = document.getElementById('currentPage');
+            const totalPagesEl = document.getElementById('totalPages');
+            
+            if (currentPageEl) currentPageEl.textContent = currentPage;
+            if (totalPagesEl) totalPagesEl.textContent = totalPages;
+            
+            // Update pagination buttons
+            let paginationHTML = '';
+            
+            // Previous button
+            if (prevPage) {
+                paginationHTML += `
+                    <a href="#" 
+                       class="btn btn-outline-primary pagination-link" 
+                       data-page="${prevPage}">Previous</a>`;
+            } else {
+                paginationHTML += `
+                    <button class="btn btn-outline-secondary" disabled>Previous</button>`;
+            }
+            
+            // Page info
+            paginationHTML += `
+                <span class="page-number text-primary">
+                    Page <span id="currentPage">${currentPage}</span> of <span id="totalPages">${totalPages}</span>
+                </span>`;
+            
+            // Next button
+            if (nextPage) {
+                paginationHTML += `
+                    <a href="#" 
+                       class="btn btn-outline-primary pagination-link" 
+                       data-page="${nextPage}">Next</a>`;
+            } else {
+                paginationHTML += `
+                    <button class="btn btn-outline-secondary" disabled>Next</button>`;
+            }
+            
+            paginationContainer.innerHTML = paginationHTML;
+            
+            // Add event listeners to new pagination buttons
+            document.querySelectorAll('.pagination-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    updateFilters(null, page);
+                });
+            });
+        }
+        
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', function() {
+            // Get the current URL parameters
+            const params = new URLSearchParams(window.location.search);
+            const currentPage = params.get('page') || '1';
+            
+            // Update active buttons based on URL parameters
+            const typeFilter = params.get('type') || 'all';
+            const genreFilter = params.get('genre') || 'all';
+            const searchQuery = params.get('search') || '';
+            
+            // Update UI to match URL state
+            document.querySelectorAll('.genre-btn[data-type]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === typeFilter);
+            });
+            
+            document.querySelectorAll('.genre-btn[data-genre]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.genre === genreFilter);
+            });
+            
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = searchQuery;
+            }
+            
+            // Update filters with the current page
+            updateFilters({ type: 'popstate' }, currentPage);
+        });
+        
+        // Initialize pagination event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to initial pagination buttons
+            document.querySelectorAll('.pagination-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    updateFilters(null, page);
+                });
+            });
+            
+            // Initialize filters from URL parameters
+            const params = new URLSearchParams(window.location.search);
+            const typeFilter = params.get('type');
+            const genreFilter = params.get('genre');
+            const searchQuery = params.get('search');
+            
+            // Set active buttons based on URL parameters
+            if (typeFilter) {
+                const typeBtn = document.querySelector(`.genre-btn[data-type="${typeFilter}"]`);
+                if (typeBtn) typeBtn.click();
+            }
+            
+            if (genreFilter) {
+                const genreBtn = document.querySelector(`.genre-btn[data-genre="${genreFilter}"]`);
+                if (genreBtn) genreBtn.click();
+            }
+            
+            if (searchQuery) {
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.value = searchQuery;
+                }
+            }
+        });
+
+        // Function to update filters and fetch data
+        function updateFilters(event, page) {
+            // Prevent default action if event is provided
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // Get current filter values
+            const typeFilter = document.querySelector('.genre-btn[data-type].active')?.dataset.type || 'all';
+            const genreFilter = document.querySelector('.genre-btn[data-genre].active')?.dataset.genre || 'all';
+            const searchInput = document.getElementById('searchInput');
+            const searchQuery = searchInput ? searchInput.value.trim() : '';
+            
+            // Get current URL parameters
+            const params = new URLSearchParams(window.location.search);
+            
+            // Update page if provided, otherwise reset to page 1 for new filters
+            if (page) {
+                params.set('page', page);
+            } else if (event && event.type !== 'popstate') {
+                // Only reset to page 1 if this is a filter change, not a page load
+                params.set('page', '1');
+            }
+            
+            // Update URL parameters
+            if (typeFilter !== 'all') {
+                params.set('type', typeFilter);
+            } else {
+                params.delete('type');
+            }
+            
+            if (genreFilter !== 'all') {
+                params.set('genre', genreFilter);
+            } else {
+                params.delete('genre');
+            }
+            
+            if (searchQuery) {
+                params.set('search', searchQuery);
+            } else {
+                params.delete('search');
+            }
+            
+            // Update URL without page reload for filter changes
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            if (event && event.type !== 'popstate') {
+                window.history.pushState({}, '', newUrl);
+            }
+            
+            // Show loading state
+            const mediaGrid = document.getElementById('mediaGrid');
+            if (mediaGrid) {
+                mediaGrid.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+            }
+            
+            // Build the filter URL - Use the backend service name in the Docker network
+            const filterUrl = `/api/media?${params.toString()}`;
+            
+            // Fetch filtered data with CORS headers
+            fetch(filterUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                mode: 'cors'
+            })
+                .then(response => {
+                    console.log('API Response:', response);
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Received data:', data);
+                    
+                    // Check if the response indicates an error
+                    if (data.status === 'error') {
+                        throw new Error(data.message || 'An unknown error occurred');
+                    }
+                    
+                    // Update pagination UI
+                    updatePaginationUI(data);
+                    
+                    // Update media grid
+                    mediaGrid.innerHTML = '';
+                    
+                    // Check both media and media_list for backward compatibility
+                    const mediaItems = data.media || data.media_list || [];
+                    
+                    if (mediaItems.length > 0) {
+                        mediaItems.forEach(media => {
+                            // Ensure media has all required properties
+                            media = {
+                                title: media.title || 'Untitled',
+                                genre: media.genre || 'N/A',
+                                rating: media.rating || 'N/A',
+                                episodes: media.episodes || 'N/A',
+                                release_year: media.release_year || 'N/A',
+                                runtime: media.runtime || 'N/A',
+                                image: media.image || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNlZWVlZWUiLz4KICA8dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+Tm8gSW1hZ2U8L3RleHQ+Cjwvc3ZnPg==',
+                                description: media.description || 'No description available.'
+                            };
+                            const card = document.createElement('div');
+                            card.className = 'col-md-4 col-lg-3 mb-4';
+                            card.innerHTML = `
+                                <div class="anime-card animate__animated animate__fadeIn">
+                                    <div class="anime-info">
+                                        <img src="images/${media.image}" 
+                                             alt="${media.title}" 
+                                             class="anime-poster"
+                                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNlZWVlZWUiLz48dGV4dCB4PSI1MCIgeT0iNTAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+'"
+>
+                                        <div class="anime-content">
+                                            <h3 class="anime-title">${media.title}</h3>
+                                            <div class="rating">
+                                                <i class="fas fa-star"></i>
+                                                <span>${media.rating || 'N/A'}</span>
+                                            </div>
+                                            <div class="anime-meta">
+                                                <div class="meta-item">
+                                                    <i class="fas fa-tags"></i>
+                                                    ${media.genre || 'N/A'}
+                                                </div>
+                                                ${typeFilter === 'best_series' ? `
+                                                <div class="meta-item">
+                                                    <i class="fas fa-film"></i>
+                                                    ${media.episodes || 'N/A'} eps
+                                                </div>
+                                                <div class="meta-item">
+                                                    <i class="fas fa-star"></i>
+                                                    ${media.rating || 'N/A'}
+                                                </div>
+                                                <div class="meta-item">
+                                                    <i class="fas fa-calendar"></i>
+                                                    ${media.release_year || 'N/A'}
+                                                </div>
+                                                <div class="meta-description">
+                                                    ${media.description || 'No description available.'}
+                                                </div>
+                                                ` : typeFilter === 'anime' ? `
+                                                <div class="meta-item">
+                                                    <i class="fas fa-film"></i>
+                                                    ${media.episodes || 'N/A'} eps
+                                                </div>
+                                                ` : `
+                                                <div class="meta-item">
+                                                    <i class="fas fa-clock"></i>
+                                                    ${media.runtime || 'N/A'} min
+                                                </div>
+                                                `}
+                                                <div class="meta-item">
+                                                    <i class="fas fa-calendar"></i>
+                                                    ${media.release_year || 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div class="anime-actions">
+                                                <button class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-play"></i> Watch Now
+                                                </button>
+                                                <button class="btn btn-outline-success btn-sm">
+                                                    <i class="fas fa-plus"></i> Add to List
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            mediaGrid.appendChild(card);
+                        });
+                    } else {
+                        mediaGrid.innerHTML = '<div class="col-12 text-center py-5"><h4>No results found</h4></div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    let errorMessage = 'Error loading content. Please try again.';
+                    if (error.message.includes('Failed to fetch')) {
+                        errorMessage = 'Unable to connect to the server. Please check your connection and try again.';
+                    } else if (error.message) {
+                        errorMessage = error.message;
+                    }
+                    mediaGrid.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <h4>${errorMessage}</h4>
+                            <button class="btn btn-primary mt-3" onclick="updateFilters()">
+                                <i class="fas fa-sync-alt me-2"></i>Retry
+                            </button>
+                        </div>`;
+                });
+        }
+
+        // Event delegation for filter buttons
+        document.addEventListener('click', function(event) {
+            // Handle type filter buttons
+            const typeButton = event.target.closest('.genre-btn[data-type]');
+            if (typeButton) {
+                event.preventDefault();
+                document.querySelectorAll('.genre-btn[data-type]').forEach(btn => btn.classList.remove('active'));
+                typeButton.classList.add('active');
+                updateFilters(event);
+                return;
+            }
+            
+            // Handle genre filter buttons
+            const genreButton = event.target.closest('.genre-btn[data-genre]');
+            if (genreButton) {
+                event.preventDefault();
+                document.querySelectorAll('.genre-btn[data-genre]').forEach(btn => btn.classList.remove('active'));
+                genreButton.classList.add('active');
+                updateFilters(event);
+            }
+        });
+        
+        // Initialize active states from URL parameters
+        function initializeActiveStates() {
+            const params = new URLSearchParams(window.location.search);
+            const type = params.get('type') || 'all';
+            const genre = params.get('genre') || 'all';
+            
+            // Set active type button
+            const activeTypeBtn = document.querySelector(`.genre-btn[data-type="${type}"]`);
+            if (activeTypeBtn) {
+                document.querySelectorAll('.genre-btn[data-type]').forEach(btn => btn.classList.remove('active'));
+                activeTypeBtn.classList.add('active');
+            } else {
+                // Default to 'all' if no type in URL
+                const allTypeBtn = document.querySelector('.genre-btn[data-type="all"]');
+                if (allTypeBtn) allTypeBtn.classList.add('active');
+            }
+            
+            // Set active genre button
+            const activeGenreBtn = document.querySelector(`.genre-btn[data-genre="${genre}"]`);
+            if (activeGenreBtn) {
+                document.querySelectorAll('.genre-btn[data-genre]').forEach(btn => btn.classList.remove('active'));
+                activeGenreBtn.classList.add('active');
+            } else {
+                // Default to 'all' if no genre in URL
+                const allGenreBtn = document.querySelector('.genre-btn[data-genre="all"]');
+                if (allGenreBtn) allGenreBtn.classList.add('active');
+            }
+        }
+        
+        // Initialize search functionality
+        // Search input handler with debounce
+        let searchTimeout;
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        
+        if (searchInput && searchButton) {
+            // Handle search button click
+            searchButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                updateFilters(event);
+            });
+            
+            // Handle Enter key in search input
+            searchInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    updateFilters(event);
+                }
+            });
+            
+            // Handle input with debounce
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    updateFilters();
+                }, 500);
+            });
+        }
+        
+        // Initialize filters from URL parameters on page load
+        function initializeFilters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const typeFilter = urlParams.get('type') || 'all';
+            const genreFilter = urlParams.get('genre') || 'all';
+            const searchQuery = urlParams.get('search') || '';
+            
+            console.log('Initializing filters:', { 
+                type: typeFilter, 
+                genre: genreFilter, 
+                search: searchQuery 
+            });
+            
+            // Set active class for type filter
+            document.querySelectorAll('.genre-btn[data-type]').forEach(button => {
+                const isActive = button.dataset.type.toLowerCase() === typeFilter.toLowerCase();
+                button.classList.toggle('active', isActive);
+                console.log(`Type button ${button.dataset.type} active:`, isActive);
+            });
+            
+            // Set active class for genre filter
+            document.querySelectorAll('.genre-btn[data-genre]').forEach(button => {
+                const buttonGenre = button.dataset.genre.toLowerCase();
+                const isActive = genreFilter.toLowerCase() !== 'all' && 
+                               buttonGenre === genreFilter.toLowerCase();
+                button.classList.toggle('active', isActive);
+                console.log(`Genre button ${button.dataset.genre} active:`, isActive);
+            });
+            
+            // Set search input value
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = searchQuery;
+            }
+            
+            // If no genre is active but there's a genre in URL, activate it
+            const activeGenre = document.querySelector('.genre-btn[data-genre].active');
+            if (!activeGenre && genreFilter.toLowerCase() !== 'all') {
+                const genreButton = Array.from(document.querySelectorAll('.genre-btn[data-genre]')).find(btn => 
+                    btn.dataset.genre.toLowerCase() === genreFilter.toLowerCase()
+                );
+                if (genreButton) {
+                    console.log('Activating genre from URL:', genreFilter);
+                    genreButton.classList.add('active');
+                } else {
+                    console.warn('Could not find genre button for:', genreFilter);
+                }
+            }
+            
+            // Trigger initial filter
+            updateFilters();
+        }
+        
+        // Initialize filters when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to handle type filter clicks
+            function handleTypeClick(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Update active class for type buttons
+                document.querySelectorAll('.genre-btn[data-type]').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                updateFilters();
+            }
+            
+            // Function to handle genre filter clicks
+            function handleGenreClick(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Toggle active class for the clicked button
+                const wasActive = this.classList.contains('active');
+                
+                // Deactivate all genre buttons first
+                document.querySelectorAll('.genre-btn[data-genre]').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // If it wasn't active, activate it
+                if (!wasActive) {
+                    this.classList.add('active');
+                }
+                
+                updateFilters();
+            }
+            
+            // Set up event listeners for filter buttons (type)
+            document.querySelectorAll('.genre-btn[data-type]').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Update active class for type buttons
+                    document.querySelectorAll('.genre-btn[data-type]').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    updateFilters(e);
+                });
+            });
+
+            // Set up event listeners for genre buttons
+            document.querySelectorAll('.genre-btn[data-genre]').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const genre = this.dataset.genre;
+                    const wasActive = this.classList.contains('active');
+                    
+                    console.log('Genre button clicked:', { 
+                        genre, 
+                        wasActive,
+                        currentActive: document.querySelector('.genre-btn[data-genre].active')?.dataset.genre
+                    });
+                    
+                    // For 'all' genre, handle it specially
+                    if (genre === 'all') {
+                        // Only update if not already active
+                        if (!wasActive) {
+                            console.log('Activating "All Genres" and deactivating others');
+                            document.querySelectorAll('.genre-btn[data-genre]').forEach(btn => {
+                                btn.classList.remove('active');
+                            });
+                            this.classList.add('active');
+                        }
+                    } else {
+                        // For other genres, deactivate 'all' button and activate clicked genre
+                        const allButton = document.querySelector('.genre-btn[data-genre="all"]');
+                        if (allButton) {
+                            allButton.classList.remove('active');
+                        }
+                        
+                        // Deactivate all other genre buttons
+                        document.querySelectorAll('.genre-btn[data-genre]').forEach(btn => {
+                            if (btn !== this) {
+                                btn.classList.remove('active');
+                            }
+                        });
+                        
+                        // Toggle the clicked button
+                        const shouldBeActive = !wasActive;
+                        this.classList.toggle('active', shouldBeActive);
+                        
+                        console.log(`Set ${genre} active:`, shouldBeActive);
+                    }
+                    
+                    // Update the URL and fetch new results
+                    updateFilters(e);
+                });
+            });
+
+            // Set up search input with debounce
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+            let searchTimeout;
+            
+            if (searchInput) {
+                // Handle Enter key in search input
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        updateFilters(e);
+                    }
+                });
+                
+                // Handle input with debounce
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        updateFilters();
+                    }, 500);
+                });
+            }
+            
+            // Handle search button click
+            if (searchButton) {
+                searchButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    updateFilters(e);
+                });
+            }
+
+
+            // Initialize filters from URL parameters
+            function initializeFilters() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const typeParam = urlParams.get('type') || 'all';
+                const genreParam = urlParams.get('genre') || 'all';
+                const searchParam = urlParams.get('search') || '';
+                
+                console.log('Initializing with URL params:', { typeParam, genreParam, searchParam });
+
+                // Set active type filter
+                let typeFound = false;
+                document.querySelectorAll('.genre-btn[data-type]').forEach(btn => {
+                    if (btn.dataset.type === typeParam) {
+                        btn.classList.add('active');
+                        typeFound = true;
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // If no type was found, activate 'all'
+                if (!typeFound && typeParam === 'all') {
+                    const allTypeBtn = document.querySelector('.genre-btn[data-type="all"]');
+                    if (allTypeBtn) allTypeBtn.classList.add('active');
+                }
+
+                // Set active genre filter
+                let genreFound = false;
+                document.querySelectorAll('.genre-btn[data-genre]').forEach(btn => {
+                    if (btn.dataset.genre === genreParam) {
+                        btn.classList.add('active');
+                        genreFound = true;
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                // If no genre was found, activate 'all'
+                if (!genreFound && genreParam === 'all') {
+                    const allGenreBtn = document.querySelector('.genre-btn[data-genre="all"]');
+                    if (allGenreBtn) allGenreBtn.classList.add('active');
+                }
+
+                // Set search input value
+                if (searchInput) {
+                    searchInput.value = searchParam;
+                }
+                
+                // Initial filter update
+                updateFilters();
+            }
+            
+            // Initialize filters when the page loads
+            document.addEventListener('DOMContentLoaded', initializeFilters);
+            
+            // Also run initialization if the DOM is already loaded
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializeFilters);
+            } else {
+                initializeFilters();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "students": {
+    "student": [
+      {
+        "ID": "1",
+        "firstName": "Sandy",
+        "lastName": "Guillaumeau",
+        "date": "1988-04-09"
+      },
+      {
+        "ID": "2",
+        "firstName": "Quentin",
+        "lastName": "Decayeux",
+        "date": "1990-02-01"
+      }
+    ]
+  }
+}
