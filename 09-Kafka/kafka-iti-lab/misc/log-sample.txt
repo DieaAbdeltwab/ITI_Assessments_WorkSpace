@@ -1,0 +1,14 @@
+[2025-07-04 07:08:39,048] INFO [DynamicConfigPublisher broker id=1] Updating topic docker-connect-configs with new configuration : cleanup.policy -> compact (kafka.server.metadata.DynamicConfigPublisher)
+[2025-07-04 07:08:39,705] INFO [GroupCoordinator 1]: Dynamic member with unknown member id joins group compose-connect-group in Empty state. Created a new member id connect-connect:8083-b07ab05c-796d-4d65-9c75-9cb140a0860f and request the member to rejoin with this id. (kafka.coordinator.group.GroupCoordinator)
+[2025-07-04 07:08:39,708] INFO [GroupCoordinator 1]: Preparing to rebalance group compose-connect-group in state PreparingRebalance with old generation 0 (__consumer_offsets-37) (reason: Adding new member connect-connect:8083-b07ab05c-796d-4d65-9c75-9cb140a0860f with group instance id None; client reason: ) (kafka.coordinator.group.GroupCoordinator)
+[2025-07-04 07:08:39,709] INFO [GroupCoordinator 1]: Stabilized group compose-connect-group generation 1 (__consumer_offsets-37) with 1 members (kafka.coordinator.group.GroupCoordinator)
+[2025-07-04 07:08:39,912] INFO [GroupCoordinator 1]: Assignment received from leader connect-connect:8083-b07ab05c-796d-4d65-9c75-9cb140a0860f for group compose-connect-group for generation 1. The group has 1 members, 0 of which are static. (kafka.coordinator.group.GroupCoordinator)
+[2025-07-04 07:17:44,640] INFO [AddPartitionsToTxnManager broker=1]Node 1 disconnected. (org.apache.kafka.clients.NetworkClient)
+[2025-07-04 07:17:44,941] INFO [TransactionCoordinator id=1] Node 1 disconnected. (org.apache.kafka.clients.NetworkClient)
+[2025-07-04 07:18:39,190] INFO [BrokerToControllerChannelManager id=1 name=forwarding] Node 1 disconnected. (org.apache.kafka.clients.NetworkClient)
+[2025-07-04 08:06:54,535] INFO [SnapshotGenerator id=1] Creating new KRaft snapshot file snapshot 00000000000000007361-0000000001 because we have waited at least 60 minute(s). (org.apache.kafka.image.publisher.SnapshotGenerator)
+[2025-07-04 08:06:54,627] INFO [SnapshotEmitter id=1] Successfully wrote snapshot 00000000000000007361-0000000001 (org.apache.kafka.image.publisher.SnapshotEmitter)
+
+test
+test 
+test

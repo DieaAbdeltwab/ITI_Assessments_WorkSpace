@@ -1,0 +1,17 @@
+==========================================================================================================================================
+http://localhost:8083/connectors?expand=status
+http://localhost:8090/
+http://localhost:8081/schemas
+==========================================================================================================================================
+Run ==>> mysql-ecomm.sql
+==========================================================================================================================================
+curl -sS -X POST -H "Accept:application/json" -H "Content-Type:application/json" http://localhost:8083/connectors/ -d @connectors/mysql/mysql-avro-ecomm.json | jq
+
+curl -X DELETE http://localhost:8083/connectors/mysql-source-ecomm
+==========================================================================================================================================
+Run ==>> clickhouse-ecomm.sql
+==========================================================================================================================================
+curl -sS -X POST -H "Accept:application/json" -H "Content-Type:application/json" http://localhost:8083/connectors/ -d @connectors/ClickHouse/clickhouse-sinke-comm.json | jq
+
+curl -X DELETE http://localhost:8083/connectors/clickhouse-sink
+==========================================================================================================================================

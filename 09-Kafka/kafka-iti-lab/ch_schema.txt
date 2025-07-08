@@ -1,0 +1,9 @@
+id	UInt32					
+order_id	UInt32					
+product_id	UInt32					
+quantity	UInt32					
+price	Decimal(10, 2)					
+_topic	String					
+_offset	UInt64					
+_partition	UInt32					
+_timestamp	DateTime					

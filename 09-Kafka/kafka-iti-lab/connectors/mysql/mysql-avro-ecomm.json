@@ -1,0 +1,39 @@
+{
+  "name": "mysql-source-ecomm",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "database.hostname": "mysql",
+    "database.port": "3306",
+    "database.user": "myuser",
+    "database.password": "mypassword",
+    "database.server.id": "184054",
+    "database.server.name": "mysql",
+    "topic.prefix": "demo",
+
+    "database.include.list": "ecomm",
+    "include.schema.changes": "false",
+
+    "schema.history.internal.kafka.bootstrap.servers": "broker:29092",
+    "schema.history.internal.kafka.topic": "schema-changes.ecomm",
+    "schema.history.internal.kafka.recovery.attempts": "3",
+    "schema.history.internal.kafka.recovery.purge.on.startup": "true",
+
+    "snapshot.mode": "initial",
+    "snapshot.new.tables": "parallel",
+
+    "decimal.handling.mode": "double", 
+    "binary.handling.mode": "base64",   
+
+    "transforms": "unwrap",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://schema-registry:8081",
+    "value.converter.schemas.enable": "true",
+
+    "producer.retries": "15",
+    "producer.retry.backoff.ms": "2000"
+  }
+}
