@@ -12,7 +12,7 @@
     "hostname": "clickhouse",
     "port": "8123",
     "username": "default",
-    "password": "",
+    "password": "123",
 
     "auto.create.tables": "false",
     "auto.evolve.tables": "true",

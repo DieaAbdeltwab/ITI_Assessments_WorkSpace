@@ -34,6 +34,8 @@
     "value.converter.schemas.enable": "true",
 
     "producer.retries": "15",
-    "producer.retry.backoff.ms": "2000"
+    "producer.retry.backoff.ms": "2000" , 
+    
+    "time.precision.mode": "connect"
   }
 }

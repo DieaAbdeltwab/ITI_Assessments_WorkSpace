@@ -41,6 +41,8 @@ services:
           memory: "2g"
     volumes:
       - $PWD/jmx-exporter:/tmp/jmx/
+    networks:
+      - kafka-net
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.6.1
@@ -54,6 +56,9 @@ services:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC: _schemas
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
+      SCHEMA_REGISTRY_KAFKASTORE_TIMEOUT_MS: 5000 
       SCHEMA_REGISTRY_JMX_OPTS: -javaagent:/tmp/jmx/jmx_prometheus_javaagent.jar=1234:/tmp/jmx/schema-registry.yml
     deploy:
       resources:
@@ -65,6 +70,8 @@ services:
           memory: "1g"
     volumes:
       - $PWD/jmx-exporter:/tmp/jmx/
+    networks:
+      - kafka-net
 
   connect:
     image: confluentinc/cp-kafka-connect:7.7.1
@@ -118,6 +125,8 @@ services:
       - $PWD/config:/tmp/config
       - $PWD/jmx-exporter:/tmp/jmx/
       - $PWD/clickhouse/clickhouse-jdbc:/tmp/clickhouse-jdbc
+    networks:
+      - kafka-net
       
     
 
@@ -178,6 +187,8 @@ services:
         reservations:
           cpus: '0.5'
           memory: "1g"
+    networks:
+      - kafka-net
 
   mysql:
     image: mysql:8.0.29
@@ -200,6 +211,8 @@ services:
         reservations:
           cpus: '0.5'
           memory: "3g"
+    networks:
+      - kafka-net
 
   postgres:
     image: postgres:14-alpine
@@ -214,6 +227,8 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
       #- $PWD/ed-pg.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - kafka-net
 
   mongodb:
     image: mongo:latest
@@ -229,6 +244,8 @@ services:
     volumes:
       - mongodb_data:/data/db
       # - ./keyfile/mongo-keyfile:/etc/mongo-keyfile:ro
+    networks:
+      - kafka-net
   #====================================================================================================================================================
   clickhouse:
     image: clickhouse/clickhouse-server:latest
@@ -238,16 +255,56 @@ services:
       - "9000:9000"
     environment:
       CLICKHOUSE_USER: default
-      CLICKHOUSE_PASSWORD: ""
+      CLICKHOUSE_PASSWORD: "123"
       CLICKHOUSE_DB: default
     volumes:
       - $PWD/clickhouse/clickhouse_config/default-password.xml:/etc/clickhouse-server/users.d/default-password.xml
       - clickhouse_data:/var/lib/clickhouse
       - clickhouse_logs:/var/log/clickhouse-server
+    networks:
+      - kafka-net
+  #====================================================================================================================================================  
+  flink-jobmanager:
+    image: flink:1.17
+    container_name: flink-jobmanager
+    hostname: flink-jobmanager
+    ports:
+      - "8082:8081"  # Expose jobmanager UI on 8082
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+        env.java.opts: -Denv.log.level=INFO
+    volumes:
+      - ./sql-scripts/flink:/opt/flink/scripts
+      - ./plugins/flink-plugins:/opt/flink/plugins
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["cp /opt/flink/plugins/*.jar /opt/flink/lib/ && exec /docker-entrypoint.sh jobmanager"]
+    networks:
+      - kafka-net
+      
 
+  flink-taskmanager:
+    image: flink:1.17
+    container_name: flink-taskmanager
+    depends_on:
+      - flink-jobmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+        env.java.opts: -Denv.log.level=INFO
+    volumes:
+      - ./sql-scripts/flink:/opt/flink/scripts
+      - ./plugins/flink-plugins:/opt/flink/plugins
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["cp /opt/flink/plugins/*.jar /opt/flink/lib/ && exec /docker-entrypoint.sh taskmanager"]
+    networks:
+      - kafka-net
 
-
-
+ 
+      
+  
   #====================================================================================================================================================
   # mongo-express:
   #   image: mongo-express:1.0.0-alpha.4
@@ -323,5 +380,9 @@ volumes:
   mongodb_data:
   clickhouse_data:
   clickhouse_logs:
+  flink_data:
 
-  
+
+networks:
+  kafka-net:
+    driver: bridge

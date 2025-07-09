@@ -9,7 +9,7 @@
 -- Port: 8123
 -- Database: default
 -- Username: default
--- Password: 
+-- Password: 123
 --========================================================================
 --========================================================================
 
@@ -69,3 +69,55 @@ DROP TABLE IF EXISTS "demo.ecomm.order_items";
 --========================================================================
 --========================================================================
 --========================================================================
+
+--========================================================================
+--========================================================================
+
+CREATE TABLE IF NOT EXISTS "demo.ecomm.users" (
+    id UInt32,
+    username String,
+    email String,
+    password String,
+    created_at DateTime,
+    valid_from DateTime DEFAULT now(),
+    valid_to DateTime DEFAULT toDateTime('9999-12-31 23:59:59'),
+    is_current UInt8 DEFAULT 1
+) ENGINE = MergeTree()
+ORDER BY id;
+
+DROP TABLE IF EXISTS users_scd2;
+
+CREATE TABLE IF NOT EXISTS users_scd2 (
+  id Int32,
+  username String,
+  email String,
+  password String,
+  created_at DateTime,
+  valid_from DateTime,
+  valid_to DateTime,
+  is_current UInt8
+) ENGINE = MergeTree()
+ORDER BY (id, valid_from);
+--========================================================================
+--========================================================================
+--========================================================================
+DROP TABLE IF  EXISTS users_scd 
+
+
+CREATE TABLE users_scd (
+  id Int32,
+  username String,
+  email String,
+  password String,
+  created_at DateTime64(3),
+  is_current UInt8,
+  version Int32
+) ENGINE = MergeTree()
+ORDER BY id;
+
+
+
+
+
+
+
